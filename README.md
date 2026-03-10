@@ -21,6 +21,7 @@ This project turns that into a repeatable workflow.
 - `init` — scaffold a new skill folder
 - `lint` — validate a single skill
 - `lint-all` — scan and score every skill in a repo
+- `lint-all --report report.md` — export a markdown report
 - `readme` — generate a starter README for a skill folder
 - `checklist` — print a pre-publish checklist
 - `init-config` — create `askit.config.json` for repo-specific rules
@@ -51,6 +52,12 @@ askit lint ./my-skill
 
 ```bash
 askit lint-all .
+```
+
+### Export a markdown report
+
+```bash
+askit lint-all . --report report.md
 ```
 
 ### Get machine-readable output
@@ -86,6 +93,20 @@ $ askit lint ./examples/demo-skill
 Score: 120
 ✔ Lint passed
 ```
+
+## Example report
+
+```bash
+$ askit lint-all . --report report.md
+✔ Wrote report to /path/to/report.md
+
+Scanned 1 skill folder(s). Failed: 0. Avg score: 120.
+```
+
+The generated report includes:
+- overall repo summary
+- per-skill score table
+- detailed passes, warnings, and errors
 
 ## Config file
 
@@ -138,6 +159,7 @@ Open-source agent ecosystems need better maintenance primitives, not just more s
 - [x] skill scaffolding
 - [x] single-skill linting
 - [x] repo-wide linting
+- [x] markdown report output
 - [x] README generation
 - [x] scoring and warnings
 - [x] JSON output
@@ -148,7 +170,6 @@ Open-source agent ecosystems need better maintenance primitives, not just more s
 - [ ] better frontmatter parsing
 - [ ] optional autofix for common issues
 - [ ] GitHub Action annotations
-- [ ] markdown summary reports
 - [ ] stricter example validation
 
 ## Contributing

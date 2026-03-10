@@ -29,6 +29,7 @@ for (let i = 1; i < args.length; i += 1) {
 
 const targetArg = positionals[0];
 const jsonMode = flags.get('--json') === 'true';
+const reportPath = flags.get('--report');
 
 function log(message) {
   console.log(message);
@@ -118,6 +119,66 @@ function getTemplate() {
 
 function generateReadme(name = path.basename(process.cwd())) {
   return `# ${name}\n\nShort summary: explain what this skill does in one sentence.\n\n## What it does\n\n- Problem it solves\n- Who it helps\n- Why it exists\n\n## Files\n\n- \`SKILL.md\` — skill definition\n- \`scripts/\` — optional helper scripts\n- \`references/\` — docs and references\n- \`assets/\` — optional media and assets\n\n## Development\n\nEdit \`SKILL.md\`, then run:\n\n\`\`\`bash\naskit lint .\n\`\`\`\n\n## License\n\nMIT\n`;
+}
+
+function ensureParentDir(filePath) {
+  mkdirp(path.dirname(filePath));
+}
+
+function writeReport(summary, outputPath) {
+  const lines = [];
+  lines.push('# agent-skill-kit report');
+  lines.push('');
+  lines.push(`- Generated: ${new Date().toISOString()}`);
+  lines.push(`- Scanned skills: ${summary.scanned}`);
+  lines.push(`- Failed skills: ${summary.failed}`);
+  lines.push(`- Average score: ${summary.averageScore}`);
+  lines.push('');
+  lines.push('## Summary');
+  lines.push('');
+  lines.push('| Skill | Score | Warnings | Errors | Status |');
+  lines.push('| --- | ---: | ---: | ---: | --- |');
+
+  for (const result of summary.results) {
+    const status = result.issues.length === 0 ? 'Pass' : 'Fail';
+    lines.push(`| ${path.basename(result.root)} | ${result.score} | ${result.warnings.length} | ${result.issues.length} | ${status} |`);
+  }
+
+  for (const result of summary.results) {
+    lines.push('');
+    lines.push(`## ${path.basename(result.root)}`);
+    lines.push('');
+    lines.push(`- Path: \`${result.root}\``);
+    lines.push(`- Score: ${result.score}`);
+    lines.push(`- Passes: ${result.passes.length}`);
+    lines.push(`- Warnings: ${result.warnings.length}`);
+    lines.push(`- Errors: ${result.issues.length}`);
+    lines.push('');
+
+    if (result.passes.length > 0) {
+      lines.push('### Passes');
+      lines.push('');
+      for (const pass of result.passes) lines.push(`- ${pass}`);
+      lines.push('');
+    }
+
+    if (result.warnings.length > 0) {
+      lines.push('### Warnings');
+      lines.push('');
+      for (const warning of result.warnings) lines.push(`- ${warning}`);
+      lines.push('');
+    }
+
+    if (result.issues.length > 0) {
+      lines.push('### Errors');
+      lines.push('');
+      for (const issue of result.issues) lines.push(`- ${issue}`);
+      lines.push('');
+    }
+  }
+
+  ensureParentDir(outputPath);
+  writeFileSafe(outputPath, `${lines.join('\n')}\n`);
 }
 
 function initSkill(name) {
@@ -215,7 +276,7 @@ function analyzeSkill(root, config = getLintConfig(process.cwd())) {
         result.warnings.push(`${heading} section looks very thin`);
       }
     } else {
-      result.issues.push(`Missing "${heading}" section`);
+      result.issues.push(`Missing \"${heading}\" section`);
     }
   }
 
@@ -335,6 +396,13 @@ function lintAll(target = '.') {
     results
   };
 
+  if (reportPath) {
+    const outputPath = path.resolve(process.cwd(), reportPath);
+    writeReport(summary, outputPath);
+    if (!jsonMode) log(`✔ Wrote report to ${outputPath}`);
+    summary.reportPath = outputPath;
+  }
+
   if (jsonMode) {
     outputJson(summary);
   } else {
@@ -420,7 +488,7 @@ switch (command) {
     log('Usage:');
     log('  askit init <name>');
     log('  askit lint [path] [--json]');
-    log('  askit lint-all [path] [--json]');
+    log('  askit lint-all [path] [--json] [--report report.md]');
     log('  askit readme [path] [--json]');
     log('  askit checklist [--json]');
     log('  askit init-config [--json]');
