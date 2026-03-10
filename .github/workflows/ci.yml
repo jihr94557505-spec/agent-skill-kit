@@ -14,4 +14,5 @@ jobs:
           node-version: 22
       - run: npm install
       - run: node ./bin/askit.js checklist
-      - run: node ./bin/askit.js lint templates/skill || true
+      - run: node ./bin/askit.js lint ./examples/demo-skill
+      - run: node ./bin/askit.js lint-all .
