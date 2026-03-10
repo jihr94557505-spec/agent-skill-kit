@@ -1,0 +1,23 @@
+{
+  "name": "agent-skill-kit",
+  "version": "0.1.0",
+  "description": "CLI to scaffold and lint AI agent skills",
+  "type": "module",
+  "bin": {
+    "askit": "./bin/askit.js"
+  },
+  "scripts": {
+    "start": "node ./bin/askit.js",
+    "lint": "node ./bin/askit.js lint .",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "skill",
+    "cli",
+    "scaffold",
+    "lint"
+  ],
+  "license": "MIT"
+}
