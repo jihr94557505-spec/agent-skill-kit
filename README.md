@@ -1,82 +1,71 @@
 # agent-skill-kit
 
-A lightweight CLI for building better AI agent skills faster.
+A lightweight CLI for scaffolding, linting, and standardizing AI agent skills.
 
-`agent-skill-kit` helps with the boring parts of skill authoring: scaffolding folders, creating a usable `SKILL.md`, linting quality, and giving maintainers a clean pre-publish checklist.
+`agent-skill-kit` is aimed at a real pain point in agent ecosystems: skill docs are often inconsistent, under-specified, and annoying to maintain at scale. This tool gives maintainers a practical baseline they can use locally or in CI.
 
-## Why this exists
+## Why this is more than a toy
 
-Agent skills are useful, but the authoring workflow is still messy in most repos:
+Most skill repos eventually hit the same problems:
 
-- people copy old folders by hand
-- `SKILL.md` quality varies wildly
-- examples and prerequisites get skipped
-- maintainers have no fast quality gate before publishing
+- copied folders drift in structure
+- `SKILL.md` quality becomes inconsistent
+- examples are vague or missing
+- contributors forget prerequisites and troubleshooting notes
+- reviewers have no fast quality gate
 
-This project is a small, opinionated fix for that problem.
+This project turns that into a repeatable workflow.
 
-## What it does today
+## Features
 
 - `init` — scaffold a new skill folder
-- `lint` — validate one skill folder
-- `lint-all` — scan a repo and lint every skill it finds
-- `readme` — generate a starter README for a skill
-- `checklist` — print a release checklist before publishing
+- `lint` — validate a single skill
+- `lint-all` — scan and score every skill in a repo
+- `readme` — generate a starter README for a skill folder
+- `checklist` — print a pre-publish checklist
+- `init-config` — create `askit.config.json` for repo-specific rules
+- `--json` output for automation and CI integrations
 
-## Who it's for
+## Quick start
 
-- people building reusable AI agent skills
-- teams maintaining internal skill libraries
-- anyone tired of copy-paste skill setup
-
-## Install
+### Install
 
 ```bash
 npm install
 npm link
 ```
 
-## Quick start
-
-### 1) Create a new skill
+### Create a new skill
 
 ```bash
 askit init my-skill
 ```
 
-This creates:
-
-- `SKILL.md`
-- `README.md`
-- `scripts/`
-- `references/`
-- `assets/`
-
-### 2) Lint one skill
+### Lint a single skill
 
 ```bash
 askit lint ./my-skill
 ```
 
-### 3) Lint an entire repo
+### Lint the whole repo
 
 ```bash
 askit lint-all .
 ```
 
-### 4) Regenerate a starter README
+### Get machine-readable output
 
 ```bash
-askit readme ./my-skill
+askit lint-all . --json
 ```
 
-### 5) Run a publish checklist
+### Create repo config
 
 ```bash
-askit checklist
+askit init-config
 ```
 
-## Example
+## Example output
 
 ```bash
 $ askit lint ./examples/demo-skill
@@ -85,74 +74,86 @@ $ askit lint ./examples/demo-skill
 ✔ Found SKILL.md
 ✔ Name exists in frontmatter
 ✔ Description exists
+✔ Description has useful length
 ✔ Contains When to Use section
 ✔ Contains Prerequisites section
 ✔ Contains Usage section
 ✔ Contains Examples section
 ✔ Contains Troubleshooting section
 ✔ Skill doc has non-trivial content
+✔ Contains at least one code block example
+✔ README.md exists
+Score: 120
 ✔ Lint passed
 ```
 
-## Lint rules in v0.1
+## Config file
 
-Current checks are intentionally simple and useful:
+Create `askit.config.json` in your repo root:
 
-- `SKILL.md` exists
-- frontmatter includes `name`
-- frontmatter includes `description`
-- includes `When to Use`
-- includes `Prerequisites`
-- includes `Usage`
-- includes `Examples`
-- includes `Troubleshooting`
-- document is not trivially short
+```json
+{
+  "minDescriptionLength": 24,
+  "minDocLength": 300,
+  "requireReadme": false,
+  "requireScriptsWhenReferenced": true
+}
+```
+
+## Current lint checks
+
+### Errors
+
+- missing `SKILL.md`
+- missing frontmatter `name`
+- missing frontmatter `description`
+- missing required sections
+- document too short
+- required README missing when config says so
+
+### Warnings
+
+- description too short
+- section content looks too thin
+- no code block example found
+- placeholder text like `TODO` / `TBD`
+- `scripts/` referenced but empty
+
+## Why this matters for OSS
+
+Open-source agent ecosystems need better maintenance primitives, not just more skills. `agent-skill-kit` focuses on quality, consistency, and contributor ergonomics so teams can keep skill libraries usable as they grow.
 
 ## Project structure
 
 - `bin/askit.js` — CLI entrypoint
-- `templates/skill/SKILL.md.tpl` — default skill template
-- `examples/demo-skill/` — sample generated skill
-- `.github/workflows/ci.yml` — basic CI
+- `templates/skill/SKILL.md.tpl` — scaffold template
+- `examples/demo-skill/` — realistic sample skill
+- `.github/workflows/ci.yml` — CI checks
+- `OPENAI_APPLICATION_NOTES.md` — notes for OSS support applications
 
 ## Roadmap
 
-### Near-term
+### Shipped
 
-- [x] scaffold command
+- [x] skill scaffolding
 - [x] single-skill linting
 - [x] repo-wide linting
-- [x] starter README generation
-- [x] release checklist
+- [x] README generation
+- [x] scoring and warnings
+- [x] JSON output
+- [x] repo-level config
 
 ### Next
 
-- [ ] configurable lint rules
-- [ ] machine-readable JSON output
 - [ ] better frontmatter parsing
-- [ ] GitHub Action with annotations
-- [ ] batch fix mode for common issues
-
-## Why this repo can grow
-
-This is intentionally small, but it has a real expansion path:
-
-- quality gates for skill ecosystems
-- CI integration for internal skill repos
-- metadata normalization
-- skill publishing workflows
-- reusable templates for teams
+- [ ] optional autofix for common issues
+- [ ] GitHub Action annotations
+- [ ] markdown summary reports
+- [ ] stricter example validation
 
 ## Contributing
 
-PRs are welcome, especially for:
-
-- better lint rules
-- skill metadata validation
-- template improvements
-- CI/reporting support
-
-See `CONTRIBUTING.md` for the current workflow.
+See `CONTRIBUTING.md`.
 
 ## License
 
